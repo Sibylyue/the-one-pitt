@@ -1,0 +1,68 @@
+package routing.bubblerap.community;
+
+import java.util.HashMap;
+import java.util.List;
+
+import core.DTNHost;
+import core.Settings;
+
+public class Betweenness {
+	/** Community Detection Algorithm to employ -setting id {@value} */
+	public static final String NRO_NODE = "nronode";
+	private int nronode;
+	private int [][]ego_matrix;
+	private double between = 0.0;
+	public Betweenness(Settings s)
+	{
+		if(s.contains(NRO_NODE))
+			this.nronode = s.getInt(NRO_NODE);		
+	}
+	
+	public Betweenness(Betweenness proto)
+	{
+		this.nronode = proto.nronode;
+		ego_matrix = new int[this.nronode][this.nronode];
+	}
+	public void newConnection(DTNHost myHost, DTNHost peer)
+	{
+		int i = peer.getAddress();
+		int j = myHost.getAddress();
+		ego_matrix[i][j]=1;
+		ego_matrix[j][i]=1;
+	}
+	public double getBetween()
+	{
+		int [][]square_matrix=square_Matrix(ego_matrix,nronode);
+		for(int i = 0;i<this.nronode;i++)
+			for(int j = 0;j<i;j++)
+			{
+				if(ego_matrix[i][j] == 0) between+= 1/(double)square_matrix[i][j];
+			}
+		return between;
+		
+	}
+	public double getsimilaritytodest(DTNHost myHost,DTNHost dest)
+	{
+		int destadd = dest.getAddress();
+		int myadd = myHost.getAddress();
+		int sim = 0;
+		for(int i= 0;i<nronode;i++)
+			if(ego_matrix[destadd][i]==ego_matrix[myadd][i])
+				++sim;
+		return sim;		
+	}
+	private int[][] square_Matrix(int[][] a,int n)
+	{
+		int[][] result = {};
+		for(int row= 0;row<n;row++)
+			for(int col=0;col<row;col++){
+				for(int i = 0;i<n;i++)					
+					result[row][col]+= a[row][i]*a[i][col];
+				     
+				
+			}
+		return result;
+	}
+	
+
+}
